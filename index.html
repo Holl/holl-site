@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snowfall</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="snowCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let windowWidth = window.innerWidth;
+        let windowHeight = window.innerHeight;
+
+        canvas.width = windowWidth;
+        canvas.height = windowHeight;
+
+        const maxSnowflakes = 150;
+        const snowflakes = [];
+
+        function Snowflake() {
+            this.x = Math.random() * windowWidth;
+            this.y = Math.random() * windowHeight;
+            this.size = Math.random() * 4 + 1;
+            this.speedY = Math.random() * 2 + 1;
+            this.speedX = Math.random() * 0.5 - 0.25;
+        }
+
+        Snowflake.prototype.draw = function() {
+            ctx.beginPath();
+            ctx.fillStyle = 'white';
+            ctx.fillRect(this.x, this.y, this.size, this.size);
+            ctx.fill();
+        }
+
+        Snowflake.prototype.update = function() {
+            this.y += this.speedY;
+            this.x += this.speedX;
+
+            if (this.y > windowHeight) {
+                this.y = 0 - this.size;
+                this.x = Math.random() * windowWidth;
+            }
+        }
+
+        for (let i = 0; i < maxSnowflakes; i++) {
+            snowflakes.push(new Snowflake());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, windowWidth, windowHeight);
+
+            for (let i = 0; i < snowflakes.length; i++) {
+                snowflakes[i].update();
+                snowflakes[i].draw();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', function() {
+            windowWidth = window.innerWidth;
+            windowHeight = window.innerHeight;
+
+            canvas.width = windowWidth;
+            canvas.height = windowHeight;
+        });
+
+        animate();
+    </script>
+
+    <!-- ... Previous code ... -->
+
+<script>
+    // ... Previous definitions ...
+
+    let isBlowing = false;
+    let blowForceX = 0;
+    let blowForceY = 0;
+
+    Snowflake.prototype.blowAway = function(mx, my) {
+        const distance = Math.sqrt((this.x - mx) ** 2 + (this.y - my) ** 2);
+
+        if (distance < 150) {
+            const force = (1 - (distance / 150)) * 10;
+            const angle = Math.atan2(this.y - my, this.x - mx);
+
+            this.speedX += Math.cos(angle) * force;
+            this.speedY += Math.sin(angle) * force;
+        }
+    }
+
+    Snowflake.prototype.update = function() {
+        if (isBlowing) {
+            this.speedX += blowForceX;
+            this.speedY += blowForceY;
+        }
+
+        this.y += this.speedY;
+        this.x += this.speedX;
+
+        if (this.y > windowHeight) {
+            this.y = 0 - this.size;
+            this.x = Math.random() * windowWidth;
+            this.speedX = Math.random() * 0.5 - 0.25; // Reset the horizontal speed
+        }
+        if (this.x > windowWidth) {
+            this.x = 0 - this.size;
+            this.speedY = Math.random() * 2 + 1; // Reset the vertical speed
+        }
+        if (this.x < 0 - this.size) {
+            this.x = windowWidth;
+        }
+    }
+
+    canvas.addEventListener('click', function(event) {
+        isBlowing = true;
+
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
+
+        for (let i = 0; i < snowflakes.length; i++) {
+            snowflakes[i].blowAway(mouseX, mouseY);
+        }
+
+        // Timer to stop blowing after a short period
+        setTimeout(() => {
+            isBlowing = false;
+        }, 200);
+    });
+
+    // ... rest of the code ...
+</script>
+
+</body>
+</html>
